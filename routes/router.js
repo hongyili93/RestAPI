@@ -1,7 +1,16 @@
 var express = require('express');
 var router = express.Router();
 var userModel = require('../models/userModel');
-const Todo = require('../models/todoModel');
+var bodyParser = require('body-parser');
+
+var verifyToken = require('./VerifyToken');
+
+router.use(bodyParser.urlencoded({ extended: false }));
+router.use(bodyParser.json());
+
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcryptjs');
+var config = require('../config');
 
 // GET route for reading data
 router.get('/', function (req, res, next) {
@@ -27,8 +36,7 @@ router.post('/', function (req, res, next) {
         var userData = {
             email: req.body.email,
             username: req.body.username,
-            password: req.body.password,
-            passwordConf: req.body.passwordConf,
+            password: req.body.password
         }
 
         userModel.create(userData, function (error, user) {
@@ -36,20 +44,23 @@ router.post('/', function (req, res, next) {
                 return next(error);
             } else {
                 req.session.userId = user._id;
-                return res.redirect('/profile');
+                var token = jwt.sign({ id: user._id }, config.secret, {
+                    expiresIn: 86400 // expires in 24 hours
+                });
+                res.status(200).send({ auth: true, token: token });
             }
         });
 
     } else if (req.body.logemail && req.body.logpassword) {
-        userModel.authenticate(req.body.logemail, req.body.logpassword, function (error, user) {
-            if (error || !user) {
-                var err = new Error('Wrong email or password.');
-                err.status = 401;
-                return next(err);
-            } else {
-                req.session.userId = user._id;
-                return res.redirect('/profile');
-            }
+        userModel.findOne({ email: req.body.logemail }, function (err, user) {
+            if (err) return res.status(500).send('Error on the server.');
+            if (!user) return res.status(404).send('No user found.');
+            var passwordIsValid = bcrypt.compareSync(req.body.logpassword, user.password);
+            if (!passwordIsValid) return res.status(401).send({ auth: false, token: null });
+            var token = jwt.sign({ id: user._id }, config.secret, {
+                expiresIn: 86400 // expires in 24 hours
+            });
+            res.status(200).send({ auth: true, token: token });
         });
     } else {
         var err = new Error('All fields required.');
@@ -59,39 +70,18 @@ router.post('/', function (req, res, next) {
 })
 
 // GET route after registering
-router.get('/profile', function (req, res, next) {
-    userModel.findById(req.session.userId)
-        .exec(function (error, user) {
-            if (error) {
-                return next(error);
-            } else {
-                if (user === null) {
-                    var err = new Error('Not authorized! Go back!');
-                    err.status = 400;
-                    return next(err);
-                } else {
-                    var json_data = [];
-                    Todo.find({'UserId':req.session.userId}, (err, todos) => {
-                        json_data = todos;
-                        return res.send('<h1>Name: </h1>' + user.username + '<h2>Mail: </h2>' + user.email + '<h2>TodoList: </h2></br>' + json_data + '<br><a type="button" href="/logout">Logout</a>');
-                    });
-                }
-            }
-        });
+router.get('/profile', verifyToken, function (req, res, next) {
+    userModel.findById(req.userId, { password: 0 }, function (err, user) {
+        if (err) return res.status(500).send("There was a problem finding the user.");
+        if (!user) return res.status(404).send("No user found.");
+        console.log(req.userId);
+        res.status(200).send(user);
+    });
 });
 
 // GET for logout logout
-router.get('/logout', function (req, res, next) {
-    if (req.session) {
-        // delete session object
-        req.session.destroy(function (err) {
-            if (err) {
-                return next(err);
-            } else {
-                return res.redirect('/');
-            }
-        });
-    }
+router.get('/logout', function(req, res) {
+    res.status(200).send({ auth: false, token: null });
 });
 
 module.exports = router;
