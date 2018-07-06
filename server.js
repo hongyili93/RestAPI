@@ -9,9 +9,10 @@ var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 
 const port = process.env.PORT || 5656;
+const dblink = 'mongodb://boeboe:database1234@ds125881.mlab.com:25881/javascript';
 
 // Connecting to the database
-mongoose.connect('mongodb://boeboe:database1234@ds125881.mlab.com:25881/javascript');
+mongoose.connect(dblink);
 var db = mongoose.connection;
 
 //handle mongo error
