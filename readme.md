@@ -1,9 +1,9 @@
 
-### install npm packages
+## install npm packages
 - npm install
 
 
-### start server
+## start server
  - node server.js
 
  - default port: [http://localhost:5656](http://localhost:5656)
@@ -11,9 +11,9 @@
  - Database server, port could be change ar ./server.js
  
  - ./config.js contains key used for generating token 
-### supported api
+## supported api
 
- - *Get*
+ - ###*Get*
     - **Logout - http://localhost:YOUR_PORT** 
                 
     - **Get all todos - http://localhost:YOUR_PORT/api/todos**
@@ -24,7 +24,7 @@
          - input field:
             1. x-access-token (header)
             
- - *Post*
+ - ###*Post*
     - **Register - http://localhost:YOUR_PORT**
         - input field:
             1. email (body)
@@ -45,7 +45,7 @@
             4. date (body)
             5. status (body)
             
- - *Put*
+ - ###*Put*
      - **Update todo item - http://localhost:YOUR_PORT/api/todos/:todoId**
           - input field:
              1. x-access-token (header)
@@ -54,7 +54,7 @@
              4. date (body)
              5. status (body)
  
- - *Patch*
+ - ###*Patch*
       - **Update todo item - http://localhost:YOUR_PORT/api/todos/:todoId**
            - input field:
               1. x-access-token (header) - **required**
@@ -62,7 +62,7 @@
               3. detail (body)- **optional**
               4. date (body)- **optional**
               5. status (body)- **optional**
- - *Delete*
+ - ###*Delete*
       - **Delete todo item - http://localhost:YOUR_PORT/api/todos/:todoId**
            - input field:
               1. x-access-token (header)
