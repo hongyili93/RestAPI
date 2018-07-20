@@ -18,7 +18,19 @@ const userModel = new Schema({
     password: {
         type: String,
         required: true,
-    }
+    },
+    token: {
+        type: String,
+        required: true,
+    },
+    Updated_date: {
+        type: Date,
+        default: Date.now
+    },
+    Created_date: {
+        type: Date,
+        default: Date.now
+    },
 });
 
 

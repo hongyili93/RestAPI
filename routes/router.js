@@ -8,6 +8,8 @@ var verifyToken = require('./VerifyToken');
 router.use(bodyParser.urlencoded({ extended: false }));
 router.use(bodyParser.json());
 
+var crypto = require('crypto');
+
 var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 var config = require('../config');
@@ -33,10 +35,17 @@ router.post('/', function (req, res, next) {
         req.body.password &&
         req.body.passwordConf) {
 
+        var hash_d = new Date();
+        var data = req.body.email+ hash_d;
+        var hash_token = crypto.createHash('sha1').update(data).digest("hex")
+        console.log(hash_d);
+        console.log(crypto.createHash('sha1').update(data).digest("hex"));
+
         var userData = {
             email: req.body.email,
             username: req.body.username,
-            password: req.body.password
+            password: req.body.password,
+            token: hash_token
         }
 
         userModel.create(userData, function (error, user) {
@@ -44,10 +53,7 @@ router.post('/', function (req, res, next) {
                 return next(error);
             } else {
                 req.session.userId = user._id;
-                var token = jwt.sign({ id: user._id }, config.secret, {
-                    expiresIn: 86400 // expires in 24 hours
-                });
-                res.status(200).send({ auth: true, token: token });
+                res.status(200).send({ auth: true, token: user.token });
             }
         });
 

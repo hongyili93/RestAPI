@@ -8,7 +8,7 @@ const routes = require('./routes/router');
 var session = require('express-session');
 var MongoStore = require('connect-mongo')(session);
 
-const port = process.env.PORT || 5656;
+const port = process.env.PORT || 8080;
 const dblink = 'mongodb://boeboe:database1234@ds125881.mlab.com:25881/javascript';
 
 // Connecting to the database
@@ -54,6 +54,7 @@ app.use(function(req, res, next) {
 app.use(function (err, req, res, next) {
     res.status(err.status||500).send(err.message);
 });
+
 
 // Running the server
 app.listen(port, () => {
